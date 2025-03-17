@@ -12,9 +12,13 @@ public class AircraftController : MonoBehaviour
     [SerializeField] private float airPressure = 14.7f;
     [SerializeField] private float wingArea = 10f;
     [SerializeField] private float verticalStabilizerArea = 1f;
+    [SerializeField] private float frontAera = 1.5f;
+    [SerializeField] private float sideAera = 10f;
 
     [SerializeField] private AnimationCurve c1;
     [SerializeField] private AnimationCurve rudderAoa;
+    [SerializeField] private AnimationCurve sideDrag;
+    [SerializeField] private AnimationCurve frontDrag;
 
     public float Aoa;
     public float AoaYaw;
@@ -37,6 +41,12 @@ public class AircraftController : MonoBehaviour
         float lift = c1.Evaluate(Aoa) * ((airPressure * (localVelocity.z * localVelocity.z)) / 2) * wingArea;
         lift = Mathf.Max(lift, 0.1f);
         rb.AddForceAtPosition(liftPoint.up * lift, liftPoint.position);
+
+        float _frontDrag = frontDrag.Evaluate(localVelocity.z) * ((airPressure * (localVelocity.z * localVelocity.z)) /2) * frontAera;
+        rb.AddForce(transform.forward * -_frontDrag);
+
+        float _sideDrag = sideDrag.Evaluate(localVelocity.x) * ((airPressure * (localVelocity.x * localVelocity.x)) /2) * sideAera;
+        rb.AddForce(transform.forward * -_sideDrag);
 
         rb.AddTorque(transform.right * lift * 0.01f);
         rb.AddTorque(transform.up * rudderAoa.Evaluate(AoaYaw) * (0.5f * airPressure * (localVelocity.z * localVelocity.z)) * verticalStabilizerArea);
