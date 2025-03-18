@@ -711,9 +711,15 @@ MonoBehaviour:
   rb: {fileID: 572448678}
   airPressure: 14.7
   wingArea: 10
-  verticalStabilizerArea: 1
+  verticalStabilizerArea: 0.1
   frontAera: 1.5
-  sideAera: 10
+  sideAera: 30
+  aileronAera: 0.3
+  elevatorAera: 0.5
+  rudderAera: 1
+  ac: -1
+  ec: 1
+  rc: 1
   c1:
     serializedVersion: 2
     m_Curve:
@@ -848,10 +854,15 @@ MonoBehaviour:
     m_RotationOrder: 4
   Aoa: 0
   AoaYaw: 0
+  maxAoa: 4
+  maxAoaYaw: 5.2
   enginePower: 10000
   velocity: {x: 0, y: 0, z: 0}
   localVelocity: {x: 0, y: 0, z: 0}
   localAngularVelocity: {x: 0, y: 0, z: 0}
+  inputPitch: 0
+  inputRoll: 0
+  inputYaw: 0
 --- !u!1 &646507983
 GameObject:
   m_ObjectHideFlags: 0
@@ -1999,8 +2010,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2913560748680543807}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 2.04, z: -9.06}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.06, y: 2.04, z: -7.71}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

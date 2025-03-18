@@ -15,6 +15,15 @@ public class AircraftController : MonoBehaviour
     [SerializeField] private float frontAera = 1.5f;
     [SerializeField] private float sideAera = 10f;
 
+    [SerializeField] private float aileronAera;
+    [SerializeField] private float elevatorAera;
+    [SerializeField] private float rudderAera;
+
+    [SerializeField] private float ac = 1;
+    [SerializeField] private float ec = 1;
+    [SerializeField] private float rc = 1;
+
+
     [SerializeField] private AnimationCurve c1;
     [SerializeField] private AnimationCurve rudderAoa;
     [SerializeField] private AnimationCurve sideDrag;
@@ -22,11 +31,18 @@ public class AircraftController : MonoBehaviour
 
     public float Aoa;
     public float AoaYaw;
-    public float enginePower;
+    public float maxAoa = 4f;
+    public float maxAoaYaw = 2f;
+    public float enginePower = 4f;
 
     public Vector3 velocity;
     public Vector3 localVelocity;
     public Vector3 localAngularVelocity;
+
+    [Header("Inputs")]
+    [SerializeField] private float inputPitch;
+    [SerializeField] private float inputRoll;
+    [SerializeField] private float inputYaw;
 
     void Start()
     {
@@ -34,6 +50,10 @@ public class AircraftController : MonoBehaviour
     }
 
     void FixedUpdate() {
+        inputPitch = Input.GetAxis("Vertical");
+        inputRoll = Input.GetAxis("Horizontal");
+        inputYaw = Input.GetAxis("Yaw");
+
         CalculateState();
 
         c1 = AnimationCurve.Linear(-10, 0, 10, 1);
@@ -46,10 +66,19 @@ public class AircraftController : MonoBehaviour
         rb.AddForce(transform.forward * -_frontDrag);
 
         float _sideDrag = sideDrag.Evaluate(localVelocity.x) * ((airPressure * (localVelocity.x * localVelocity.x)) /2) * sideAera;
-        rb.AddForce(transform.forward * -_sideDrag);
+        rb.AddForce(transform.right * -_sideDrag);
+
+        float _aileron = ac * ((airPressure) * (localVelocity.z * localVelocity.z) / 2) * aileronAera;
+        float _elevator = ec * ((airPressure) * (localVelocity.z * localVelocity.z) / 2) * elevatorAera;
+        float _rudder = rc * ((airPressure) * (localVelocity.z * localVelocity.z) / 2) * rudderAera;
 
         rb.AddTorque(transform.right * lift * 0.01f);
         rb.AddTorque(transform.up * rudderAoa.Evaluate(AoaYaw) * (0.5f * airPressure * (localVelocity.z * localVelocity.z)) * verticalStabilizerArea);
+        if (Mathf.Sqrt(AoaYaw * AoaYaw) < maxAoaYaw)
+            rb.AddTorque(transform.up * _rudder * inputYaw);
+        rb.AddTorque(transform.forward * _aileron * inputRoll);
+        if (Mathf.Sqrt(Aoa * Aoa) < maxAoa) 
+            rb.AddTorque(transform.right * _elevator * inputPitch);
 
         Debug.Log($"Lift Force: {lift}");
         Debug.Log($"Velocity: {velocity}");
