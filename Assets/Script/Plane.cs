@@ -1,4 +1,6 @@
 ﻿using UnityEngine;
+using System.Collections.Generic;
+using System.Collections;
 
 namespace MFlight.Demo
 {
@@ -23,7 +25,10 @@ namespace MFlight.Demo
         public float Roll { set { roll = Mathf.Clamp(value, -1f, 1f); } get { return roll; } }
 
         private Rigidbody rigid;
-        private static bool useMouse = false; // Default to keyboard control
+        private Vector3 startPos;
+        private Quaternion startRot;
+
+        private static HashSet<GameObject> collectedSpheres = new HashSet<GameObject>();
 
         private void Awake()
         {
@@ -31,24 +36,16 @@ namespace MFlight.Demo
 
             if (controller == null)
                 Debug.LogWarning(name + ": Plane - Missing reference to MouseFlightController!");
+            
+            startPos = transform.position;
+            startRot = transform.rotation;
         }
 
         private void Update()
         {
-            if (useMouse)
-            {
-                // Mouse + Keyboard Control
-                pitch = Mathf.Clamp(Input.GetAxis("Mouse X"), -1f, 1f);
-                yaw = Mathf.Clamp(Input.GetAxis("Mouse Y"), -1f, 1f);
-                roll = (Input.GetKey(KeyCode.A) ? -1f : 0f) + (Input.GetKey(KeyCode.D) ? 1f : 0f);
-            }
-            else
-            {
-                // Keyboard Only Control
-                pitch = (Input.GetKey(KeyCode.W) ? 1f : 0f) + (Input.GetKey(KeyCode.S) ? -1f : 0f);
-                yaw = (Input.GetKey(KeyCode.Q) ? -1f : 0f) + (Input.GetKey(KeyCode.E) ? 1f : 0f);
-                roll = (Input.GetKey(KeyCode.A) ? -1f : 0f) + (Input.GetKey(KeyCode.D) ? 1f : 0f);
-            }
+            pitch = (Input.GetKey(KeyCode.W) ? 1f : 0f) + (Input.GetKey(KeyCode.S) ? -1f : 0f);
+            yaw = (Input.GetKey(KeyCode.A) ? -1f : 0f) + (Input.GetKey(KeyCode.D) ? 1f : 0f);
+            roll = (Input.GetKey(KeyCode.Q) ? -1f : 0f) + (Input.GetKey(KeyCode.E) ? 1f : 0f);
         }
 
         private void FixedUpdate()
@@ -60,9 +57,39 @@ namespace MFlight.Demo
                                     ForceMode.Force);
         }
 
-        public static void SetControlMode(bool mouseEnabled)
+        private void OnCollisionEnter(Collision collision)
         {
-            useMouse = mouseEnabled;
+            if (collision.gameObject.CompareTag("Obstacles"))
+                StartCoroutine(RespawnAfterDelay(1f)); 
+        }
+
+        private void OnTriggerEnter(Collider other)
+        {
+            if (other.CompareTag("Sphere"))
+                CollectSphere(other.gameObject);
+        }
+
+        private IEnumerator RespawnAfterDelay(float delay)
+        {
+            yield return new WaitForSeconds(delay);
+            Respawn();
+        }
+
+        private void Respawn()
+        {
+            transform.position = startPos;
+            transform.rotation = startRot;
+            rigid.velocity = Vector3.zero;
+            rigid.angularVelocity = Vector3.zero;
+        }
+
+        private void CollectSphere(GameObject sphere)
+        {
+            if (!collectedSpheres.Contains(sphere))
+            {
+                collectedSpheres.Add(sphere);
+                sphere.SetActive(false); 
+            }
         }
     }
 }
