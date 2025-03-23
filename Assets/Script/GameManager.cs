@@ -7,11 +7,17 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager instance;
     
-    public int totalSpheres = 10; 
+    [SerializeField] private int totalSpheres = 10; 
     private int collectedSpheres = 0;
     
-    public TextMeshProUGUI collectionText;
-    public CanvasGroup panelCanvasGroup;
+    [SerializeField] private TextMeshProUGUI collectionText;
+    [SerializeField] private CanvasGroup panelCanvasGroup;
+
+    [SerializeField] private GameObject particleGroupPrefab; 
+    [SerializeField] private Transform player;
+    [SerializeField] private float spawnRadius = 20f;
+    [SerializeField] private int maxParticles = 5;
+    private GameObject[] activeParticles;
 
     private void Awake()
     {
@@ -21,8 +27,30 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
-        panelCanvasGroup.alpha = 0; 
+        panelCanvasGroup.alpha = 0;
+        activeParticles = new GameObject[maxParticles];
+
+        for (int i = 0; i < maxParticles; i++)
+        {
+            Vector3 spawnPos = GetSpawnPosition();
+            activeParticles[i] = Instantiate(particleGroupPrefab, spawnPos, Quaternion.identity);
+        }
         UpdateUI();
+    }
+
+    void Update()
+    {
+        for (int i = 0; i < maxParticles; i++)
+        {
+            if (activeParticles[i] != null)
+            {
+                float distance = Vector3.Distance(player.position, activeParticles[i].transform.position);
+                if (distance > spawnRadius * 1.5f)
+                {
+                    activeParticles[i].transform.position = GetSpawnPosition();
+                }
+            }
+        }
     }
 
     public void CollectSphere()
@@ -62,6 +90,22 @@ public class GameManager : MonoBehaviour
         if (collectedSpheres > 0)
         {
             panelCanvasGroup.alpha = 1; 
+        }
+    }
+
+    Vector3 GetSpawnPosition()
+    {
+        Vector3 spawnPos = player.position + Random.insideUnitSphere * spawnRadius;
+        spawnPos.y = player.position.y; 
+        return spawnPos;
+    }
+
+    private void OnDrawGizmos()
+    {
+        if (player != null)
+        {
+            Gizmos.color = Color.green;
+            Gizmos.DrawWireSphere(player.position, spawnRadius);
         }
     }
 }
