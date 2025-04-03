@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Collections;
 
-namespace MFlight.Demo
+namespace flight.one
 {
     [RequireComponent(typeof(Rigidbody))]
     public class Plane : MonoBehaviour
@@ -79,7 +79,7 @@ namespace MFlight.Demo
         {
             transform.position = startPos;
             transform.rotation = startRot;
-            rigid.velocity = Vector3.zero;
+            rigid.linearVelocity = Vector3.zero;
             rigid.angularVelocity = Vector3.zero;
         }
 
