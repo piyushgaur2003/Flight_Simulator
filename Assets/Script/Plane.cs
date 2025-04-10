@@ -1,6 +1,8 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 using System.Collections;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 
 namespace flight.one
 {
@@ -20,6 +22,13 @@ namespace flight.one
         [SerializeField] [Range(-1f, 1f)] private float yaw = 0f;
         [SerializeField] [Range(-1f, 1f)] private float roll = 0f;
 
+        [Header("Post-Processing")]
+        [SerializeField] private Volume globalVolume;
+
+        private FilmGrain filmGrain;
+        private ChromaticAberration chromaticAberration;
+        private Coroutine postEffectCoroutine;
+
         public float Pitch { set { pitch = Mathf.Clamp(value, -1f, 1f); } get { return pitch; } }
         public float Yaw { set { yaw = Mathf.Clamp(value, -1f, 1f); } get { return yaw; } }
         public float Roll { set { roll = Mathf.Clamp(value, -1f, 1f); } get { return roll; } }
@@ -30,6 +39,9 @@ namespace flight.one
 
         private static HashSet<GameObject> collectedSpheres = new HashSet<GameObject>();
 
+        [SerializeField] float respawnDelayTime;
+        [SerializeField] float postProcessTime;
+
         private void Awake()
         {
             rigid = GetComponent<Rigidbody>();
@@ -39,6 +51,12 @@ namespace flight.one
             
             startPos = transform.position;
             startRot = transform.rotation;
+
+            if (globalVolume != null && globalVolume.profile != null)
+            {
+                globalVolume.profile.TryGet(out filmGrain);
+                globalVolume.profile.TryGet(out chromaticAberration);
+            }
         }
 
         private void Update()
@@ -46,6 +64,14 @@ namespace flight.one
             pitch = (Input.GetKey(KeyCode.W) ? 1f : 0f) + (Input.GetKey(KeyCode.S) ? -1f : 0f);
             yaw = (Input.GetKey(KeyCode.A) ? -1f : 0f) + (Input.GetKey(KeyCode.D) ? 1f : 0f);
             roll = (Input.GetKey(KeyCode.LeftArrow) ? -1f : 0f) + (Input.GetKey(KeyCode.RightArrow) ? 1f : 0f);
+
+            pitch += Input.GetAxis("DPadVertical"); 
+            yaw += Input.GetAxis("DPadHorizontal"); 
+            roll += Input.GetAxis("RightStickX");
+
+            pitch = Mathf.Clamp(pitch, -1f, 1f);
+            yaw = Mathf.Clamp(yaw, -1f, 1f);
+            roll = Mathf.Clamp(roll, -1f, 1f);
         }
 
         private void FixedUpdate()
@@ -60,7 +86,13 @@ namespace flight.one
         private void OnCollisionEnter(Collision collision)
         {
             if (collision.gameObject.CompareTag("Obstacles"))
-                StartCoroutine(RespawnAfterDelay(1f)); 
+            {
+                if (postEffectCoroutine != null)
+                    StopCoroutine(postEffectCoroutine);
+
+                postEffectCoroutine = StartCoroutine(EnablePostProcessingEffects());
+                StartCoroutine(RespawnAfterDelay(respawnDelayTime));
+            } 
         }
 
         private void OnTriggerEnter(Collider other)
@@ -91,5 +123,21 @@ namespace flight.one
                 sphere.SetActive(false); 
             }
         }
+
+        private IEnumerator EnablePostProcessingEffects()
+        {
+            yield return new WaitForSeconds(0.2f);
+            
+            if (filmGrain != null) filmGrain.active = true;
+            if (chromaticAberration != null) chromaticAberration.active = true;
+
+            yield return new WaitForSeconds(postProcessTime);
+
+            if (filmGrain != null) filmGrain.active = false;
+            if (chromaticAberration != null) chromaticAberration.active = false;
+
+            postEffectCoroutine = null;
+        }
+
     }
 }
