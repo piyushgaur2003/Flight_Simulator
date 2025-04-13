@@ -58,7 +58,8 @@ Material:
     - _QueueControl: 0
     - _QueueOffset: 0
     m_Colors:
-    - _Color: {r: 23.547169, g: 16.67175, b: 5.6646485, a: 0}
+    - _BaseColor: {r: 1, g: 1, b: 1, a: 0}
+    - _Color: {r: 22.684183, g: 16.67175, b: 5.6646485, a: 0}
     - _Ring_Color: {r: 0.55375576, g: 1.4582397, b: 1.9245284, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

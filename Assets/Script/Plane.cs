@@ -25,6 +25,15 @@ namespace flight.one
         [Header("Post-Processing")]
         [SerializeField] private Volume globalVolume;
 
+        [Header("Visuals")]
+        [SerializeField] private TrailRenderer leftTrail;
+        [SerializeField] private TrailRenderer rightTrail;
+
+        [Header("Boundary Settings")]
+        [SerializeField] private float returnRadius = 500f;
+        [SerializeField] private Color radiusColor = Color.green;
+
+
         private FilmGrain filmGrain;
         private ChromaticAberration chromaticAberration;
         private Coroutine postEffectCoroutine;
@@ -41,6 +50,12 @@ namespace flight.one
 
         [SerializeField] float respawnDelayTime;
         [SerializeField] float postProcessTime;
+
+        
+        private bool isGrounded;
+        [SerializeField] private float groundCheckDistance = 1.5f;
+        [SerializeField] private LayerMask groundLayer;
+
 
         private void Awake()
         {
@@ -76,11 +91,27 @@ namespace flight.one
 
         private void FixedUpdate()
         {
-            rigid.AddRelativeForce(Vector3.forward * thrust * forceMult, ForceMode.Force);
-            rigid.AddRelativeTorque(new Vector3(turnTorque.x * pitch,
+            CheckIfGrounded();
+
+            if (leftTrail != null) leftTrail.enabled = !isGrounded;
+            if (rightTrail != null) rightTrail.enabled = !isGrounded;
+
+            if (isGrounded) {
+                rigid.AddRelativeForce(Vector3.forward * thrust * forceMult, ForceMode.Force);
+            }
+            else{
+                rigid.AddRelativeForce(Vector3.forward * thrust * forceMult, ForceMode.Force);
+                rigid.AddRelativeTorque(new Vector3(turnTorque.x * pitch,
                                                 turnTorque.y * yaw,
                                                 -turnTorque.z * roll) * forceMult,
                                     ForceMode.Force);
+            }
+
+            float distanceFromStart = Vector3.Distance(transform.position, startPos);
+            if (distanceFromStart > returnRadius)
+            {
+                Respawn();
+            }
         }
 
         private void OnCollisionEnter(Collision collision)
@@ -138,6 +169,18 @@ namespace flight.one
 
             postEffectCoroutine = null;
         }
+
+        private void CheckIfGrounded()
+        {
+            isGrounded = Physics.Raycast(transform.position, -transform.up, groundCheckDistance, groundLayer);
+        }
+
+        private void OnDrawGizmosSelected()
+        {
+            Gizmos.color = radiusColor;
+            Gizmos.DrawWireSphere(Application.isPlaying ? startPos : transform.position, returnRadius);
+        }
+
 
     }
 }

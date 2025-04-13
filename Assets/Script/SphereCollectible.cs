@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using DG.Tweening;
 
 public class SphereCollectible : MonoBehaviour
 {
@@ -8,7 +9,15 @@ public class SphereCollectible : MonoBehaviour
     [SerializeField] float rotSpeed = 90f;
 
     [SerializeField] float fadeOutTime = 1f;
+    [SerializeField] float bounceForce = 5f;
     private bool isCollected = false;
+
+    private Rigidbody rb;
+
+    void Awake()
+    {
+        rb = GetComponent<Rigidbody>();
+    }
 
     void Update()
     {
@@ -20,46 +29,37 @@ public class SphereCollectible : MonoBehaviour
         }
     }
 
-    private void OnTriggerEnter(Collider other)
+    private void OnCollisionEnter(Collision collision)
     {
+        GetComponent<Collider>().enabled = false;
+
         if (isCollected) return;
 
-        if (other.CompareTag("Player") || other.transform.root.CompareTag("Player")) 
+
+        if (collision.gameObject.CompareTag("Player") || collision.transform.root.CompareTag("Player"))
         {
             isCollected = true;
+
+            GetComponent<Collider>().enabled = false;
+
+            rb.isKinematic = false;
+            rb.AddForce((transform.up + transform.forward) * bounceForce, ForceMode.Impulse);
+            rb.AddTorque(Random.insideUnitSphere * 5f, ForceMode.Impulse);
+
             GameManager.instance.CollectSphere();
-            StartCoroutine(FadeOutAndDestroy());
         }
     }
 
+
     private IEnumerator FadeOutAndDestroy()
     {
-        Collider[] colliders = GetComponentsInChildren<Collider>();
-        foreach (var col in colliders)
-        {
-            col.enabled = false;
-        }
-
-        Renderer[] renderers = GetComponentsInChildren<Renderer>();
-        Material[] materials = new Material[renderers.Length];
-        Color[] startColors = new Color[renderers.Length];
-
-        for (int i = 0; i < renderers.Length; i++)
-        {
-            materials[i] = renderers[i].material;
-            startColors[i] = materials[i].color;
-        }
-
         float elapsed = 0f;
+        Vector3 originalScale = transform.localScale;
+
         while (elapsed < fadeOutTime)
         {
             float t = elapsed / fadeOutTime;
-            for (int i = 0; i < materials.Length; i++)
-            {
-                Color c = startColors[i];
-                c.a = Mathf.Lerp(1f, 0f, t);
-                materials[i].color = c;
-            }
+            transform.localScale = Vector3.Lerp(originalScale, Vector3.zero, t);
             elapsed += Time.deltaTime;
             yield return null;
         }
