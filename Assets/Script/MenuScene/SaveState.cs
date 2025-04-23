@@ -4,4 +4,6 @@ public class SaveState
     public int completedLevel = 0;
 
     public int planeOwned = 0;
+
+    public int activePlane = 0;
 }

@@ -14,14 +14,19 @@ public class MenuScene : MonoBehaviour
     [SerializeField] Transform modePanel;
 
     [SerializeField] TextMeshProUGUI planeBuySetText;
+    [SerializeField] TextMeshProUGUI goldText;
 
     private int[] planeCost = new int[] { 0, 5, 5, 5, 10, 10, 10, 15, 15, 10 };
     private int selectedPlaneIndex;
+    private int activePlaneIndex;
 
     private Vector3 desiredMenuPos;
 
     void Start()
     {
+        SaveManager.Instance.state.gold = 999; // temp
+        UpdateGoldText();
+
         fadeGroup = FindObjectOfType<CanvasGroup>();
         fadeGroup.alpha = 1;
 
@@ -29,6 +34,11 @@ public class MenuScene : MonoBehaviour
         InitShop();
 
         InitMode();
+
+        OnPlaneSelect(SaveManager.Instance.state.activePlane);
+        SetPlane(SaveManager.Instance.state.activePlane);
+
+        planePanel.GetChild(SaveManager.Instance.state.activePlane).GetComponent<RectTransform>().localScale = Vector3.one * 1.1f;
     }
 
     void Update()
@@ -45,16 +55,25 @@ public class MenuScene : MonoBehaviour
                 desiredMenuPos = Vector3.zero;
                 break;
             case 1:
-                desiredMenuPos = Vector3.right * 1280;
+                desiredMenuPos = Vector3.right * 1920;
                 break;
             case 2:
-                desiredMenuPos = Vector3.left * 1280;
+                desiredMenuPos = Vector3.left * 1920;
                 break;
         }
     }
 
     private void SetPlane(int index){
+        activePlaneIndex = index;
+        SaveManager.Instance.state.activePlane = index;
+        
         planeBuySetText.text = "Current";
+
+        SaveManager.Instance.Save();
+    }
+
+    private void UpdateGoldText(){
+        goldText.text = SaveManager.Instance.state.gold.ToString();
     }
 
     public void OnPlayClick(){
@@ -81,6 +100,9 @@ public class MenuScene : MonoBehaviour
             Button b = t.GetComponent<Button>();
             b.onClick.AddListener(() => OnPlaneSelect(currentIndex));
 
+            Image img = t.GetComponent<Image>();
+            img.color = SaveManager.Instance.IsPlaneOwned(i) ? Color.white : new Color(0.7f, 0.7f, 0.7f);
+
             i++;
         }
     }
@@ -103,10 +125,20 @@ public class MenuScene : MonoBehaviour
     private void OnPlaneSelect(int currentIndex){
         Debug.Log("Selecting Plane: " + currentIndex);
 
+        if (selectedPlaneIndex == currentIndex)
+            return;
+        
+        planePanel.GetChild(currentIndex).GetComponent<RectTransform>().localScale = Vector3.one * 1.1f;
+        planePanel.GetChild(selectedPlaneIndex).GetComponent<RectTransform>().localScale = Vector3.one;
+
         selectedPlaneIndex = currentIndex;
 
         if (SaveManager.Instance.IsPlaneOwned(currentIndex)){
-            planeBuySetText.text = "Select";
+            if (activePlaneIndex == currentIndex){
+                planeBuySetText.text = "Current";
+            } else{
+                planeBuySetText.text = "Select";
+            }
         } else{
             planeBuySetText.text = "Buy: " + planeCost[currentIndex].ToString();
         }
@@ -120,6 +152,10 @@ public class MenuScene : MonoBehaviour
         } else{
             if (SaveManager.Instance.BuyPlane(selectedPlaneIndex, planeCost[selectedPlaneIndex])){
                 SetPlane(selectedPlaneIndex);
+
+                planePanel.GetChild(selectedPlaneIndex).GetComponent<Image>().color = Color.white;
+
+                UpdateGoldText();
             } else{
                 Debug.Log("Not Enough gold!");
             }
