@@ -2,6 +2,7 @@ using System;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using DG.Tweening;
 
 public class MenuScene : MonoBehaviour
 {
@@ -16,6 +17,9 @@ public class MenuScene : MonoBehaviour
     [SerializeField] TextMeshProUGUI planeBuySetText;
     [SerializeField] TextMeshProUGUI goldText;
 
+    [SerializeField] GameObject levelPanel;
+    [SerializeField] GameObject backButton;
+
     private int[] planeCost = new int[] { 0, 5, 5, 5, 10, 10, 10, 15, 15, 10 };
     private int selectedPlaneIndex;
     private int activePlaneIndex;
@@ -24,13 +28,11 @@ public class MenuScene : MonoBehaviour
 
     void Start()
     {
-        SaveManager.Instance.state.gold = 999; // temp
         UpdateGoldText();
 
         fadeGroup = FindObjectOfType<CanvasGroup>();
         fadeGroup.alpha = 1;
 
-        //adding the button onclick events
         InitShop();
 
         InitMode();
@@ -45,7 +47,7 @@ public class MenuScene : MonoBehaviour
     {
         fadeGroup.alpha = 1 - Time.timeSinceLevelLoad * fadeInSpeed;
 
-        menuContainer.anchoredPosition3D = Vector3.Lerp(menuContainer.anchoredPosition3D, desiredMenuPos, 0.01f);
+        menuContainer.anchoredPosition3D = Vector3.Lerp(menuContainer.anchoredPosition3D, desiredMenuPos, 0.03f);
     }
 
     void NavigateTo(int menuIndex){
@@ -164,5 +166,37 @@ public class MenuScene : MonoBehaviour
 
     public void OnModeSelect(int currentIndex){
         Debug.Log("Selecting Level: " + currentIndex);
+    }
+
+    public void ShowPanel()
+    {   
+        backButton.SetActive(false);
+        modePanel.gameObject.SetActive(false);
+
+        levelPanel.SetActive(true);
+        levelPanel.transform.localScale = Vector3.zero;
+        levelPanel.GetComponent<CanvasGroup>().alpha = 0;
+
+        levelPanel.transform.DOScale(Vector3.one, 0.5f).SetEase(Ease.OutBack);
+        levelPanel.GetComponent<CanvasGroup>().DOFade(1, 0.5f);
+    }
+
+    public void HidePanel()
+    {
+        levelPanel.transform.DOScale(Vector3.zero, 0.4f).SetEase(Ease.InBack);
+        levelPanel.GetComponent<CanvasGroup>().DOFade(0, 0.4f)
+            .OnComplete(() =>
+            {
+                levelPanel.SetActive(false);
+                
+                modePanel.gameObject.SetActive(true);
+                backButton.SetActive(true);
+
+                modePanel.localScale = Vector3.zero;
+                backButton.transform.localScale = Vector3.zero;
+
+                modePanel.DOScale(Vector3.one, 0.3f).SetEase(Ease.OutBack);
+                backButton.transform.DOScale(Vector3.one, 0.3f).SetEase(Ease.OutBack);
+            });
     }
 }

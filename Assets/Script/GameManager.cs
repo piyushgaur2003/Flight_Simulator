@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
 using TMPro;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
@@ -18,6 +19,8 @@ public class GameManager : MonoBehaviour
     [SerializeField] private float spawnRadius = 20f;
     [SerializeField] private int maxParticles = 5;
     private GameObject[] activeParticles;
+
+    [SerializeField] string sceneName;
 
     private void Awake()
     {
@@ -107,5 +110,10 @@ public class GameManager : MonoBehaviour
             Gizmos.color = Color.green;
             Gizmos.DrawWireSphere(player.position, spawnRadius);
         }
+    }
+
+    public void GoToMainMenu()
+    {
+        SceneManager.LoadScene(sceneName);
     }
 }
