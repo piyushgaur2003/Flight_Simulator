@@ -21,8 +21,8 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: PS1
-  m_Shader: {fileID: -6465566751694194690, guid: 5de0ce563dfda4925b17d283a34e9987, type: 3}
-  m_Parent: {fileID: 0}
+  m_Shader: {fileID: -6465566751694194690, guid: c15a5b78d34a64410a48408d8af18bf7, type: 3}
+  m_Parent: {fileID: 2100000, guid: edb8950feaf0f434b843702234736cf6, type: 2}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
   m_InvalidKeywords: []
@@ -36,32 +36,11 @@ Material:
   m_LockedProperties: 
   m_SavedProperties:
     serializedVersion: 3
-    m_TexEnvs:
-    - _Main_Tex:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - unity_Lightmaps:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - unity_LightmapsInd:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - unity_ShadowMasks:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
+    m_TexEnvs: []
     m_Ints: []
-    m_Floats:
-    - _Lighting_Cutoff: 0.39
-    - _QueueControl: 0
-    - _QueueOffset: 0
-    - _Shadow_Brightness: 0.311
+    m_Floats: []
     m_Colors:
-    - _Bottom_Color: {r: 0, g: 0.52542996, b: 1, a: 0}
+    - _BaseColor: {r: 0, g: 0, b: 0, a: 0}
     - _Color: {r: 1, g: 1, b: 1, a: 0}
-    - _Top_Color: {r: 0, g: 0.5594597, b: 1, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

@@ -17,6 +17,8 @@ public class MenuScene : MonoBehaviour
     [SerializeField] TextMeshProUGUI planeBuySetText;
     [SerializeField] TextMeshProUGUI goldText;
 
+    private MenuCamera menuCam;
+
     [SerializeField] GameObject levelPanel;
     [SerializeField] GameObject backButton;
 
@@ -28,6 +30,7 @@ public class MenuScene : MonoBehaviour
 
     void Start()
     {
+        menuCam = FindObjectOfType<MenuCamera>();
         UpdateGoldText();
 
         fadeGroup = FindObjectOfType<CanvasGroup>();
@@ -55,12 +58,15 @@ public class MenuScene : MonoBehaviour
             default:
             case 0:
                 desiredMenuPos = Vector3.zero;
+                menuCam.BackToMainMenu();
                 break;
             case 1:
                 desiredMenuPos = Vector3.right * 1920;
+                menuCam.MoveToLevel();
                 break;
             case 2:
                 desiredMenuPos = Vector3.left * 1920;
+                menuCam.MoveToShop();
                 break;
         }
     }
